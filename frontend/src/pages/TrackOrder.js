@@ -14,6 +14,7 @@ export default function TrackOrder() {
   const [bankDetails, setBankDetails] = useState(null);
   const MapIcon = AppIcons.map;
   const ClockIcon = AppIcons.clock;
+  const orderSkeletonRows = Array.from({ length: 3 });
 
   useEffect(() => {
     if (!id) return;
@@ -33,7 +34,29 @@ export default function TrackOrder() {
     ({ status }) => setOrder(o => o ? { ...o, status } : o)
   );
 
-  if (loading) return <div className="spinner-wrap"><div className="spinner" /></div>;
+  if (loading) return (
+    <div className="container" style={{ padding:'40px 20px' }}>
+      <div style={styles.head}>
+        <div>
+          <div className="skeleton skeleton-text" style={{ width:180, height:26, marginBottom:8 }} />
+          <div className="skeleton skeleton-text" style={{ width:240, height:12 }} />
+        </div>
+        <div className="skeleton skeleton-text" style={{ width:140, height:32, borderRadius:999 }} />
+      </div>
+
+      <div className="skeleton-card" style={{ marginTop:20 }}>
+        <div className="skeleton skeleton-text" style={{ width:150, height:18, marginBottom:16 }} />
+        <div className="skeleton" style={{ height: 260, borderRadius: 12 }} />
+      </div>
+
+      {orderSkeletonRows.map((_, idx) => (
+        <div key={idx} className="skeleton-card" style={{ marginTop:20 }}>
+          <div className="skeleton skeleton-text" style={{ width:140, height:18, marginBottom:14 }} />
+          <div className="skeleton skeleton-text" style={{ width:'100%', height: idx === 0 ? 84 : 120, marginBottom: idx === 2 ? 0 : 14 }} />
+        </div>
+      ))}
+    </div>
+  );
   if (!order) return <div style={{ textAlign:'center', padding:60 }}>Order not found. Please check the ID.</div>;
 
   const STATUS_LABEL = { pending_payment:'Awaiting payment confirmation', pending:'Pending', confirmed:'Order confirmed', preparing:'Preparing your items', in_transit:'Rider on the way', delivered:'Delivered!', cancelled:'Cancelled' };

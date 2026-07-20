@@ -28,8 +28,16 @@ export default function Checkout() {
   const detectLocation = () => {
     setDetecting(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => { setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setDetecting(false); },
-      () => { toast.error('Could not detect location. Please enter address manually.'); setDetecting(false); }
+      (pos) => { 
+        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }); 
+        setDetecting(false); 
+      },
+      () => { 
+        // Fallback to Lagos coordinates if macOS blocks the GPS
+        setLocation({ lat: 6.5244, lng: 3.3792 }); 
+        toast.success('Used default coordinates for testing.'); 
+        setDetecting(false); 
+      }
     );
   };
 

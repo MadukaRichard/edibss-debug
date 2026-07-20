@@ -27,6 +27,8 @@ export default function Dashboard() {
   return (
     <div>
       <h1 style={styles.pageTitle}>Dashboard</h1>
+      
+      {/* Upgraded to auto-fit for responsive stretching */}
       <div style={styles.statGrid}>
         {cards.map(c => (
           <div key={c.label} style={styles.statCard}>
@@ -39,22 +41,31 @@ export default function Dashboard() {
 
       <div style={styles.card}>
         <h2 style={styles.cardTitle}>Recent orders</h2>
-        <table style={styles.table}>
-          <thead><tr style={styles.thead}>
-            <th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th>
-          </tr></thead>
-          <tbody>
-            {orders.map(o => (
-              <tr key={o._id} style={styles.tr}>
-                <td style={{ fontWeight:600 }}>#{o.orderNumber}</td>
-                <td>{o.customer?.name}</td>
-                <td>{o.items?.length} item{o.items?.length!==1?'s':''}</td>
-                <td style={{ fontWeight:600, color:'var(--teal)' }}>₦{o.total?.toLocaleString()}</td>
-                <td><span className={`badge ${STATUS_BADGE[o.status]}`}>{o.status?.replace('_',' ')}</span></td>
+        {/* Added Scrollable Wrapper for tables */}
+        <div style={styles.tableWrapper}>
+          <table style={styles.table}>
+            <thead>
+              <tr style={styles.thead}>
+                <th style={styles.th}>Order</th>
+                <th style={styles.th}>Customer</th>
+                <th style={styles.th}>Items</th>
+                <th style={styles.th}>Total</th>
+                <th style={styles.th}>Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {orders.map(o => (
+                <tr key={o._id} style={styles.tr}>
+                  <td style={{ ...styles.td, fontWeight:600 }}>#{o.orderNumber}</td>
+                  <td style={styles.td}>{o.customer?.name}</td>
+                  <td style={styles.td}>{o.items?.length} item{o.items?.length!==1?'s':''}</td>
+                  <td style={{ ...styles.td, fontWeight:600, color:'var(--teal)' }}>₦{o.total?.toLocaleString()}</td>
+                  <td style={styles.td}><span className={`badge ${STATUS_BADGE[o.status]}`}>{o.status?.replace('_',' ')}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -62,14 +73,19 @@ export default function Dashboard() {
 
 const styles = {
   pageTitle: { fontSize:24, fontWeight:700, color:'var(--gray-700)', marginBottom:24 },
-  statGrid: { display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:16, marginBottom:24 },
+  // FIX: Changed auto-fill to auto-fit so it stretches to fill empty space
+  statGrid: { display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(220px, 1fr))', gap:16, marginBottom:24 },
   statCard: { background:'#fff', borderRadius:12, border:'1px solid var(--gray-200)', padding:'20px', display:'flex', flexDirection:'column', gap:8 },
   statIcon: { width:44, height:44, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', fontSize:20 },
   statNum: { fontSize:28, fontWeight:700, color:'var(--gray-700)' },
   statLabel: { fontSize:13, color:'var(--gray-500)' },
   card: { background:'#fff', borderRadius:12, border:'1px solid var(--gray-200)', padding:'20px' },
   cardTitle: { fontSize:16, fontWeight:700, marginBottom:16, color:'var(--gray-700)' },
-  table: { width:'100%', borderCollapse:'collapse' },
+  // FIX: Added horizontal scroll wrapper to prevent UI squishing on mobile
+  tableWrapper: { overflowX: 'auto', WebkitOverflowScrolling: 'touch', width: '100%' },
+  table: { width:'100%', borderCollapse:'collapse', minWidth: '600px' }, // Enforce minimum width
   thead: { background:'var(--gray-50)' },
+  th: { padding: '12px 16px', textAlign: 'left', color: 'var(--gray-500)', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }, // Prevent text wrapping
   tr: { borderBottom:'1px solid var(--gray-100)' },
+  td: { padding: '16px', fontSize: 14, whiteSpace: 'nowrap' }, // Prevent text wrapping
 };

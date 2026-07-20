@@ -6,6 +6,7 @@ export default function ReviewsCMS() {
   const [reviews, setReviews] = useState([]);
   const [filter, setFilter] = useState('');
   const [loading, setLoading] = useState(true);
+  const skeletonRows = Array.from({ length: 5 });
 
   const load = () => {
     setLoading(true);
@@ -39,7 +40,26 @@ export default function ReviewsCMS() {
         </select>
       </div>
 
-      {loading ? <div className="spinner-wrap"><div className="spinner"/></div> : (
+      {loading ? (
+        <div style={styles.card}>
+          <table style={styles.table}>
+            <thead><tr style={styles.thRow}>{['Customer','Phone','Product','Stars','Comment','Status','Actions'].map(h=><th key={h} style={styles.th}>{h}</th>)}</tr></thead>
+            <tbody>
+              {skeletonRows.map((_, idx) => (
+                <tr key={idx} style={styles.tr}>
+                  <td style={styles.td}><div className="skeleton skeleton-text" style={{ width:110 }} /></td>
+                  <td style={styles.td}><div className="skeleton skeleton-text" style={{ width:90 }} /></td>
+                  <td style={styles.td}><div className="skeleton skeleton-text" style={{ width:120 }} /></td>
+                  <td style={styles.td}><div className="skeleton skeleton-text" style={{ width:70 }} /></td>
+                  <td style={styles.td}><div className="skeleton skeleton-text" style={{ width:'100%', maxWidth:220 }} /></td>
+                  <td style={styles.td}><div className="skeleton skeleton-text" style={{ width:72 }} /></td>
+                  <td style={styles.td}><div style={{ display:'flex', gap:6 }}><div className="skeleton skeleton-text" style={{ width:62, height:28 }} /><div className="skeleton skeleton-text" style={{ width:46, height:28 }} /><div className="skeleton skeleton-text" style={{ width:54, height:28 }} /></div></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
         <div style={styles.card}>
           <table style={styles.table}>
             <thead><tr style={styles.thRow}>{['Customer','Phone','Product','Stars','Comment','Status','Actions'].map(h=><th key={h} style={styles.th}>{h}</th>)}</tr></thead>

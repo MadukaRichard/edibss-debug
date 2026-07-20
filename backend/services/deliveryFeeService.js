@@ -9,8 +9,12 @@ const haversineKm = (lat1, lng1, lat2, lng2) => {
 };
 
 const isPeakHour = (peakHours=[]) => {
-  const now = new Date();
-  const cur = now.getHours()*60 + now.getMinutes();
+  const options = { timeZone: 'Africa/Lagos', hour: 'numeric', minute: 'numeric', hour12: false };
+  const timeString = new Intl.DateTimeFormat('en-GB', options).format(new Date());
+  const [currentHour, currentMinute] = timeString.split(':').map(Number);
+  
+  const cur = currentHour * 60 + currentMinute;
+
   return peakHours.some(slot => {
     const [s,e] = slot.split('-').map(t => { const [h,m]=t.split(':').map(Number); return h*60+m; });
     return cur >= s && cur <= e;

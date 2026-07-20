@@ -57,9 +57,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // 1. Remove auth data
     localStorage.removeItem('medirun_token');
     localStorage.removeItem('medirun_user');
+    
+    // 2. Remove the cart data so the next person starts fresh!
+    localStorage.removeItem('medirun_cart');
+    
+    // 3. Clear the user state
     setUser(null);
+    
+    // 4. Force a hard redirect to the login page to clear active memory
+    window.location.href = '/login';
   };
 
   return (
@@ -68,3 +77,4 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+

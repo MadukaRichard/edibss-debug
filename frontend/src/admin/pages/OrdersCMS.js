@@ -16,6 +16,7 @@ export default function OrdersCMS() {
   const [confirming, setConfirming] = useState(null);
   const [assigning, setAssigning] = useState(null);
   const [pickedRider, setPickedRider] = useState({});
+  const skeletonRows = Array.from({ length: 5 });
 
   const load = () => {
     setLoading(true);
@@ -68,7 +69,24 @@ export default function OrdersCMS() {
         </select>
       </div>
 
-      {loading ? <div className="spinner-wrap"><div className="spinner"/></div> : (
+      {loading ? (
+        <div style={styles.card}>
+          <table style={styles.table}>
+            <thead><tr style={styles.thRow}>{['Order #','Customer','Phone','Items','Total','Delivery fee','Status','Payment','Rider','Update status','Actions',''].map(h=>(
+              <th key={h} style={styles.th}>{h}</th>
+            ))}</tr></thead>
+            <tbody>
+              {skeletonRows.map((_, idx) => (
+                <tr key={idx} style={styles.tr}>
+                  {Array.from({ length: 12 }).map((__, cellIdx) => (
+                    <td key={cellIdx} style={styles.td}><div className="skeleton skeleton-text" style={{ width: cellIdx === 0 ? 68 : cellIdx === 3 ? 32 : cellIdx === 5 ? 56 : 72, height: 12 }} /></td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
         <div style={styles.card}>
           <table style={styles.table}>
             <thead><tr style={styles.thRow}>

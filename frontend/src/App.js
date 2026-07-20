@@ -37,7 +37,8 @@ export default function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <BrowserRouter>
+        {/* ADD THE FUTURE FLAGS HERE */}
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Toaster position="top-right" toastOptions={{ duration:3500, style:{ fontFamily:'Inter,sans-serif', fontSize:14 } }} />
           <Routes>
             {/* Store routes */}

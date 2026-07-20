@@ -13,12 +13,15 @@ export default function Home() {
     headline: 'Medicines & health products, at your door in 30 min',
     subheadline: 'Licensed pharmacy partners, real-time rider GPS, AI-calculated delivery fees.',
     badge: 'Fast health delivery',
-    cta: 'Shop now'
+    cta: 'Shop now',
+    background: null // Added this to track the dynamic background
   });
   const LightningIcon = AppIcons.clock;
+  const skeletonCards = Array.from({ length: 8 });
 
   useEffect(() => {
     api.get('/site-content').then(({ data }) => {
+      // This will now successfully pull in headline, subheadline, AND background!
       if (data.hero) setHero(h => ({ ...h, ...data.hero }));
     }).catch(() => {});
   }, []);
@@ -33,10 +36,11 @@ export default function Home() {
 
   return (
     <div>
-      {/* Hero */}
-      <div style={styles.hero}>
+      {/* FIX: Dynamically applying the background from the database, falling back to styles.hero */}
+      <div style={{ ...styles.hero, ...(hero.background || hero.bgColor ? { background: hero.background || hero.bgColor } : {}) }}>
         <div className="container">
           <div className="badge badge-teal" style={{ marginBottom: 16, fontSize: 13 }}><LightningIcon size={14} style={{ marginRight: 6, verticalAlign: 'text-bottom' }} />{hero.badge}</div>
+          {/* FIX: Ensure your Admin CMS is saving text under the exact keys "headline" and "subheadline" */}
           <h1 style={styles.h1}>{hero.headline}</h1>
           <p style={styles.sub}>{hero.subheadline}</p>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -71,7 +75,22 @@ export default function Home() {
         </div>
 
         {loading ? (
-          <div className="spinner-wrap"><div className="spinner" /></div>
+          <div style={styles.grid} aria-busy="true" aria-live="polite">
+            {skeletonCards.map((_, idx) => (
+              <div key={idx} className="skeleton-card">
+                <div className="skeleton" style={styles.skelImage} />
+                <div style={styles.skelBody}>
+                  <div className="skeleton skeleton-text" style={styles.skelLineLg} />
+                  <div className="skeleton skeleton-text" style={styles.skelLineSm} />
+                  <div className="skeleton skeleton-text" style={styles.skelLineMd} />
+                  <div style={styles.skelFooter}>
+                    <div className="skeleton skeleton-text" style={styles.skelPrice} />
+                    <div className="skeleton skeleton-text" style={styles.skelButton} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : products.length === 0 ? (
           <div style={{ textAlign: 'center', color: 'var(--gray-500)', padding: 40 }}>No products found</div>
         ) : (
@@ -95,4 +114,12 @@ const styles = {
   cat: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '12px 16px', borderRadius: 12, border: '1.5px solid var(--gray-200)', background: '#fff', cursor: 'pointer', minWidth: 76, transition: 'all 0.15s', whiteSpace: 'nowrap', fontFamily: 'var(--font)' },
   catActive: { background: 'var(--teal-lt)', borderColor: 'var(--teal)', color: 'var(--teal-dk)' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16 },
+  skelImage: { height: 120, width: '100%', borderRadius: 0 },
+  skelBody: { padding: '14px 14px 12px' },
+  skelLineLg: { width: '78%', height: 14, borderRadius: 999, marginBottom: 6 },
+  skelLineSm: { width: '52%', height: 10, borderRadius: 999, marginBottom: 12 },
+  skelLineMd: { width: '88%', height: 12, borderRadius: 999, marginBottom: 12 },
+  skelFooter: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  skelPrice: { width: 70, height: 15, borderRadius: 999 },
+  skelButton: { width: 58, height: 30, borderRadius: 8 },
 };

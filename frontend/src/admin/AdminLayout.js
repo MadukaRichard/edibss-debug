@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AppIcons, NavIconMap } from '../components/UiIcons';
@@ -19,8 +19,23 @@ export default function AdminLayout({ children }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  
+  // Mobile responsiveness state
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
   const LogoIcon = AppIcons.logo;
   const LogOutIcon = AppIcons.logOut;
+  const MenuIcon = AppIcons.menu;
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) setMobileDrawerOpen(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   if (!user || user.role !== 'admin') return (
     <div style={{ textAlign:'center', padding:60 }}>
@@ -29,26 +44,56 @@ export default function AdminLayout({ children }) {
     </div>
   );
 
+  const sidebarActive = isMobile ? mobileDrawerOpen : true;
+  const sidebarWidth = isMobile ? 260 : (collapsed ? 64 : 220);
+
   return (
     <div style={styles.wrap}>
+      {/* Mobile Dark Overlay */}
+      {isMobile && mobileDrawerOpen && (
+        <div 
+          style={styles.mobileOverlay} 
+          onClick={() => setMobileDrawerOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="admin-sidebar" style={{ ...styles.sidebar, width: collapsed ? 64 : 220 }}>
+      <aside className="admin-sidebar" style={{ 
+        ...styles.sidebar, 
+        width: sidebarWidth,
+        transform: isMobile && !mobileDrawerOpen ? 'translateX(-100%)' : 'translateX(0)',
+        position: isMobile ? 'fixed' : 'sticky',
+        zIndex: isMobile ? 1000 : 1
+      }}>
         <div style={styles.sideHead}>
-          {!collapsed && <span className="admin-sidebar-label" style={styles.sideLogo}><LogoIcon size={16} style={{ marginRight: 8, verticalAlign: 'text-bottom' }} />MediRun Admin</span>}
-          <button className="admin-collapse-btn" style={styles.collapseBtn} onClick={() => setCollapsed(c=>!c)}>{collapsed?'→':'←'}</button>
+          {(!collapsed || isMobile) && <span className="admin-sidebar-label" style={styles.sideLogo}><LogoIcon size={16} style={{ marginRight: 8, verticalAlign: 'text-bottom' }} />MediRun Admin</span>}
+          {!isMobile && (
+            <button className="admin-collapse-btn" style={styles.collapseBtn} onClick={() => setCollapsed(c=>!c)}>{collapsed?'→':'←'}</button>
+          )}
         </div>
-        <nav style={{ flex:1 }}>
-          {NAV.map(n => (
-            <Link key={n.path} to={n.path} style={{ ...styles.navItem, ...(pathname===n.path ? styles.navActive : {}) }}>
-              {React.createElement(NavIconMap[n.icon], { size: 18 })}
-              {!collapsed && <span className="admin-sidebar-label" style={{ fontSize:14 }}>{n.label}</span>}
-            </Link>
-          ))}
+        <nav style={{ flex:1, overflowY: 'auto' }}>
+          {NAV.map(n => {
+            const isActive = pathname === n.path;
+            return (
+              <Link 
+                key={n.path} 
+                to={n.path} 
+                onClick={() => isMobile && setMobileDrawerOpen(false)}
+                style={{ 
+                  ...styles.navItem, 
+                  ...(isActive ? styles.navActive : {}) 
+                }}
+              >
+                {React.createElement(NavIconMap[n.icon], { size: 18 })}
+                {(!collapsed || isMobile) && <span className="admin-sidebar-label" style={{ fontSize:14 }}>{n.label}</span>}
+              </Link>
+            )
+          })}
         </nav>
         <div style={styles.sideFooter}>
-          {!collapsed && <div className="admin-sidebar-label" style={{ fontSize:13, color:'rgba(255,255,255,0.6)', marginBottom:8 }}>{user.name}</div>}
+          {(!collapsed || isMobile) && <div className="admin-sidebar-label" style={{ fontSize:13, color:'rgba(255,255,255,0.6)', marginBottom:8 }}>{user.name}</div>}
           <button style={styles.logoutBtn} onClick={() => { logout(); navigate('/'); }}>
-            <LogOutIcon size={16} />{!collapsed && <span className="admin-sidebar-label" style={{ fontSize:13 }}>Logout</span>}
+            <LogOutIcon size={16} />{(!collapsed || isMobile) && <span className="admin-sidebar-label" style={{ fontSize:13 }}>Logout</span>}
           </button>
         </div>
       </aside>
@@ -56,7 +101,15 @@ export default function AdminLayout({ children }) {
       {/* Main */}
       <main style={styles.main}>
         <div style={styles.topBar}>
-          <Link to="/" style={{ fontSize:13, color:'var(--gray-500)' }}>← Back to store</Link>
+          {isMobile && (
+            <button 
+              onClick={() => setMobileDrawerOpen(true)} 
+              style={styles.hamburgerBtn}
+            >
+              <MenuIcon size={24} />
+            </button>
+          )}
+          <Link to="/" style={{ fontSize:13, color:'var(--gray-500)', marginLeft: isMobile ? 16 : 0 }}>← Back to store</Link>
         </div>
         <div className="admin-content" style={styles.content}>{children}</div>
       </main>
@@ -65,16 +118,19 @@ export default function AdminLayout({ children }) {
 }
 
 const styles = {
-  wrap: { display:'flex', minHeight:'100vh' },
-  sidebar: { background:'#0F6E56', display:'flex', flexDirection:'column', transition:'width 0.2s', flexShrink:0, position:'sticky', top:0, height:'100vh', overflow:'hidden' },
+  wrap: { display:'flex', minHeight:'100vh', position: 'relative' },
+  mobileOverlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 999 },
+  sidebar: { background:'#0F6E56', display:'flex', flexDirection:'column', transition:'transform 0.3s ease, width 0.2s', flexShrink:0, top:0, height:'100vh', overflow:'hidden' },
   sideHead: { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'20px 16px', borderBottom:'1px solid rgba(255,255,255,0.1)' },
   sideLogo: { fontSize:15, fontWeight:700, color:'#fff', whiteSpace:'nowrap' },
   collapseBtn: { background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', borderRadius:6, width:28, height:28, cursor:'pointer', flexShrink:0 },
+  // FIX: Removed borderLeftColor conflict. Now using full borderLeft shorthand strictly.
   navItem: { display:'flex', alignItems:'center', gap:12, padding:'11px 16px', color:'rgba(255,255,255,0.75)', transition:'all 0.15s', borderLeft:'3px solid transparent', textDecoration:'none', whiteSpace:'nowrap', overflow:'hidden' },
-  navActive: { background:'rgba(255,255,255,0.15)', color:'#fff', borderLeftColor:'#fff' },
+  navActive: { background:'rgba(255,255,255,0.15)', color:'#fff', borderLeft:'3px solid #fff' },
   sideFooter: { padding:'16px', borderTop:'1px solid rgba(255,255,255,0.1)' },
   logoutBtn: { display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.1)', border:'none', color:'rgba(255,255,255,0.8)', borderRadius:8, padding:'8px 12px', cursor:'pointer', width:'100%' },
   main: { flex:1, display:'flex', flexDirection:'column', minWidth:0, background:'var(--gray-50)' },
   topBar: { background:'#fff', borderBottom:'1px solid var(--gray-200)', padding:'12px 28px', display:'flex', alignItems:'center' },
-  content: { padding:'28px', flex:1 },
+  hamburgerBtn: { background: 'none', border: 'none', color: 'var(--gray-700)', cursor: 'pointer', display: 'flex', padding: 0 },
+  content: { padding: '24px clamp(16px, 4vw, 28px)', flex:1, overflowX: 'hidden' }, // Dynamic padding
 };

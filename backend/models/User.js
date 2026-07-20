@@ -4,7 +4,8 @@ const bcrypt = require('bcryptjs');
 const userSchema = new mongoose.Schema({
   name:     { type: String, required: true, trim: true },
   email:    { type: String, required: true, unique: true, lowercase: true },
-  phone:    { type: String, required: true, default: '' },
+  // FIX: Removed required: true here!
+  phone:    { type: String, default: '' }, 
   // Password is only required for locally-registered accounts. Google-auth
   // accounts have no password at all — they sign in via Firebase instead.
   password: { type: String, minlength: 6, select: true },
@@ -21,8 +22,10 @@ userSchema.pre('save', async function(next) {
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
+
 userSchema.methods.matchPassword = async function(entered) {
   if (!this.password) return false; // Google-only account, no local password set
   return await bcrypt.compare(entered, this.password);
 };
+
 module.exports = mongoose.model('User', userSchema);

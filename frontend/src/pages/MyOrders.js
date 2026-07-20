@@ -10,12 +10,29 @@ export default function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const PackageIcon = AppIcons.package;
+  const skeletonRows = Array.from({ length: 4 });
 
   useEffect(() => {
     api.get('/orders/my-orders').then(({ data }) => setOrders(data)).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="spinner-wrap"><div className="spinner" /></div>;
+  if (loading) return (
+    <div className="container" style={{ padding:'40px 20px' }}>
+      <div className="skeleton skeleton-text" style={{ width:160, height:24, marginBottom:28 }} />
+      {skeletonRows.map((_, idx) => (
+        <div key={idx} className="skeleton-card" style={{ display:'flex', alignItems:'center', gap:20, marginBottom:10, flexWrap:'wrap' }}>
+          <div style={{ flex:'1 1 220px' }}>
+            <div className="skeleton skeleton-text" style={{ width:90, marginBottom:8 }} />
+            <div className="skeleton skeleton-text" style={{ width:140, height:10 }} />
+          </div>
+          <div className="skeleton skeleton-text" style={{ width:70, height:12 }} />
+          <div className="skeleton skeleton-text" style={{ width:100, height:16 }} />
+          <div className="skeleton skeleton-text" style={{ width:88, height:24, borderRadius:999 }} />
+          <div className="skeleton skeleton-text" style={{ width:86, height:32, borderRadius:8, marginLeft:'auto' }} />
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="container" style={{ padding:'40px 20px' }}>

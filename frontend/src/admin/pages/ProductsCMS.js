@@ -14,7 +14,14 @@ export default function ProductsCMS() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const load = () => api.get('/admin/products').then(({data}) => setProducts(data)).catch(()=>{});
+  const load = async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.get('/admin/products');
+      setProducts(data);
+    } catch {}
+    finally { setLoading(false); }
+  };
   useEffect(() => { load(); }, []);
 
   const set = (k,v) => setForm(f=>({...f,[k]:v}));
@@ -59,24 +66,56 @@ export default function ProductsCMS() {
       </div>
 
       <div style={styles.card}>
-        <table style={styles.table}>
-          <thead><tr style={styles.th}><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
-          <tbody>
-            {products.map(p => (
-              <tr key={p._id} style={styles.tr}>
-                <td><div style={{ display:'flex', alignItems:'center', gap:10 }}><CategoryIcon category={p.category} size={22} /><div><div style={{ fontWeight:600, fontSize:14 }}>{p.name}</div>{p.requiresPrescription&&<span style={{ fontSize:11,color:'var(--amber)' }}>Rx</span>}</div></div></td>
-                <td><span className="badge badge-gray">{p.category}</span></td>
-                <td style={{ fontWeight:600 }}>₦{p.price?.toLocaleString()}</td>
-                <td><span style={{ color: p.stock===0?'var(--coral)':p.stock<5?'var(--amber)':'inherit' }}>{p.stock}</span></td>
-                <td><span className={`badge ${p.isActive?'badge-success':'badge-gray'}`}>{p.isActive?'Active':'Inactive'}</span></td>
-                <td><div style={{ display:'flex', gap:8 }}>
-                  <button className="btn btn-sm" onClick={()=>openEdit(p)}>Edit</button>
-                  <button className="btn btn-sm btn-danger" onClick={()=>handleDelete(p._id)}>Delete</button>
-                </div></td>
+        {/* FIX: Added the responsive scrolling wrapper here */}
+        <div style={styles.tableWrapper}>
+          <table style={styles.table}>
+            <thead>
+              <tr style={styles.tr}>
+                {/* FIX: Moved styles.th to the actual <th> tags */}
+                <th style={styles.th}>Product</th>
+                <th style={styles.th}>Category</th>
+                <th style={styles.th}>Price</th>
+                <th style={styles.th}>Stock</th>
+                <th style={styles.th}>Status</th>
+                <th style={styles.th}>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {loading ? Array.from({ length: 6 }).map((_, idx) => (
+                <tr key={idx} style={styles.tr}>
+                  <td style={styles.td}><div style={{ display:'flex', alignItems:'center', gap:10 }}><div className="skeleton skeleton-circle" style={{ width:22, height:22 }} /><div style={{ flex:1 }}><div className="skeleton skeleton-text" style={{ width:'65%', marginBottom:6 }} /><div className="skeleton skeleton-text" style={{ width:'35%', height:10 }} /></div></div></td>
+                  <td style={styles.td}><div className="skeleton skeleton-text" style={{ width:90 }} /></td>
+                  <td style={styles.td}><div className="skeleton skeleton-text" style={{ width:70 }} /></td>
+                  <td style={styles.td}><div className="skeleton skeleton-text" style={{ width:36 }} /></td>
+                  <td style={styles.td}><div className="skeleton skeleton-text" style={{ width:72 }} /></td>
+                  <td style={styles.td}><div style={{ display:'flex', gap:8 }}><div className="skeleton skeleton-text" style={{ width:52, height:28 }} /><div className="skeleton skeleton-text" style={{ width:60, height:28 }} /></div></td>
+                </tr>
+              )) : products.map(p => (
+                <tr key={p._id} style={styles.tr}>
+                  <td style={styles.td}>
+                    <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                      <CategoryIcon category={p.category} size={22} />
+                      <div>
+                        <div style={{ fontWeight:600, fontSize:14 }}>{p.name}</div>
+                        {p.requiresPrescription && <span style={{ fontSize:11,color:'var(--amber)' }}>Rx</span>}
+                      </div>
+                    </div>
+                  </td>
+                  <td style={styles.td}><span className="badge badge-gray">{p.category}</span></td>
+                  <td style={{ ...styles.td, fontWeight:600 }}>₦{p.price?.toLocaleString()}</td>
+                  <td style={styles.td}><span style={{ color: p.stock===0?'var(--coral)':p.stock<5?'var(--amber)':'inherit' }}>{p.stock}</span></td>
+                  <td style={styles.td}><span className={`badge ${p.isActive?'badge-success':'badge-gray'}`}>{p.isActive?'Active':'Inactive'}</span></td>
+                  <td style={styles.td}>
+                    <div style={{ display:'flex', gap:8 }}>
+                      <button className="btn btn-sm" onClick={()=>openEdit(p)}>Edit</button>
+                      <button className="btn btn-sm btn-danger" onClick={()=>handleDelete(p._id)}>Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {modal && (
@@ -118,12 +157,20 @@ export default function ProductsCMS() {
 }
 
 const styles = {
-  head: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 },
+  // FIX: Added flexWrap and gap so the button doesn't squish on mobile
+  head: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, flexWrap:'wrap', gap:12 },
   pageTitle: { fontSize:24, fontWeight:700, color:'var(--gray-700)' },
   card: { background:'#fff', borderRadius:12, border:'1px solid var(--gray-200)', overflow:'hidden' },
-  table: { width:'100%', borderCollapse:'collapse' },
-  th: { background:'var(--gray-50)', textAlign:'left' },
+  
+  // FIX: Added the horizontal scroll wrapper and min-width to the table
+  tableWrapper: { overflowX: 'auto', WebkitOverflowScrolling: 'touch', width: '100%' },
+  table: { width:'100%', borderCollapse:'collapse', minWidth: '800px' },
+  
+  // FIX: Added padding and whiteSpace: 'nowrap' to the cells so text stays on one line
+  th: { background:'var(--gray-50)', textAlign:'left', padding: '14px 16px', color: 'var(--gray-500)', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' },
   tr: { borderBottom:'1px solid var(--gray-100)' },
+  td: { padding: '16px', fontSize: 14, whiteSpace: 'nowrap' },
+  
   overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:999, padding:20 },
   modal: { background:'#fff', borderRadius:16, width:'100%', maxWidth:600, padding:'24px', maxHeight:'90vh', overflowY:'auto', boxShadow:'0 20px 60px rgba(0,0,0,0.2)' },
   modalHead: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 },

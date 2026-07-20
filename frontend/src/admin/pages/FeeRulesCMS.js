@@ -11,6 +11,7 @@ export default function FeeRulesCMS() {
   const SaveIcon = AppIcons.payment;
   const ClockIcon = AppIcons.clock;
   const LocateIcon = AppIcons.locateFixed;
+  const skeletonRows = Array.from({ length: 2 });
 
   const detectStoreLocation = () => {
     setDetecting(true);
@@ -41,7 +42,36 @@ export default function FeeRulesCMS() {
     finally { setSaving(false); }
   };
 
-  if (loading) return <div className="spinner-wrap"><div className="spinner"/></div>;
+  if (loading) return (
+    <div>
+      <div style={styles.head}>
+        <div className="skeleton skeleton-text" style={{ width:260, height:28 }} />
+        <div className="skeleton skeleton-text" style={{ width:120, height:40, borderRadius:8 }} />
+      </div>
+
+      <div style={{ ...styles.preview, background:'#fff' }}>
+        {skeletonRows.map((_, idx) => (
+          <div key={idx} className="skeleton skeleton-text" style={{ width: idx === 0 ? '70%' : '55%', height: 14, marginBottom: 10 }} />
+        ))}
+      </div>
+
+      <div style={styles.section}>
+        <div className="skeleton skeleton-text" style={{ width:180, height:20, marginBottom:14 }} />
+        <div className="form-row">
+          <div className="form-group"><div className="skeleton skeleton-text" style={{ width:90, height:12, marginBottom:8 }} /><div className="skeleton skeleton-text" style={{ width:'100%', height:42 }} /></div>
+          <div className="form-group"><div className="skeleton skeleton-text" style={{ width:90, height:12, marginBottom:8 }} /><div className="skeleton skeleton-text" style={{ width:'100%', height:42 }} /></div>
+        </div>
+      </div>
+
+      <div style={styles.section}>
+        <div className="skeleton skeleton-text" style={{ width:150, height:20, marginBottom:14 }} />
+        <div className="form-row">
+          <div className="form-group"><div className="skeleton skeleton-text" style={{ width:90, height:12, marginBottom:8 }} /><div className="skeleton skeleton-text" style={{ width:'100%', height:42 }} /></div>
+          <div className="form-group"><div className="skeleton skeleton-text" style={{ width:90, height:12, marginBottom:8 }} /><div className="skeleton skeleton-text" style={{ width:'100%', height:42 }} /></div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div>

@@ -28,7 +28,8 @@ export default function Navbar() {
 
         <div className="navbar-links" style={styles.links}>
           <Link to="/products" style={styles.link}>Shop</Link>
-          <Link to="/track" style={styles.link}>Track order</Link>
+          {/* FIX: Now points to /orders and only shows if user is logged in */}
+          {user && <Link to="/orders" style={styles.link}>Track order</Link>}
           {user?.role === 'admin' && <Link to="/admin" style={{ ...styles.link, color: 'var(--coral)' }}>Admin</Link>}
         </div>
 
@@ -61,7 +62,8 @@ export default function Navbar() {
         <div className="navbar-mobile-menu" style={styles.mobileMenu}>
           <Link to="/products" style={styles.mobileLink} onClick={() => setMobileMenuOpen(false)}>Shop</Link>
           <Link to="/cart" style={styles.mobileLink} onClick={() => setMobileMenuOpen(false)}>Cart ({count})</Link>
-          <Link to="/track" style={styles.mobileLink} onClick={() => setMobileMenuOpen(false)}>Track order</Link>
+          {/* FIX: Now points to /orders and only shows if user is logged in */}
+          {user && <Link to="/orders" style={styles.mobileLink} onClick={() => setMobileMenuOpen(false)}>Track order</Link>}
           {user ? (
             <>
               <Link to="/orders" style={styles.mobileLink} onClick={() => setMobileMenuOpen(false)}>My orders</Link>

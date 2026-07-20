@@ -98,6 +98,10 @@ router.put('/:id/assign-rider', [
     req.app.get('io').to(`rider:${rider._id}`).emit('new:order', { orderId:order._id, orderNumber:order.orderNumber, deliveryAddress:order.deliveryAddress, deliveryLocation:order.deliveryLocation });
     req.app.get('io').to(`order:${order._id}`).emit('order:status:update', { status: order.status, orderNumber: order.orderNumber });
 
+    req.app.get('io').to(`order:${order._id}`).emit('rider:assigned', { 
+      rider: { name: rider.name, phone: rider.phone, vehicle: rider.vehicle },
+      location: rider.location
+    });
     res.json(await order.populate('rider', 'name phone vehicle'));
   } catch (err) { res.status(500).json({ message: err.message }); }
 });

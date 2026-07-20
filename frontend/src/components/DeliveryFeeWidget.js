@@ -7,16 +7,25 @@ export default function DeliveryFeeWidget({ customerLat, customerLng, subtotal, 
   const [detecting, setDetecting] = useState(false);
   const MapPinIcon = AppIcons.mapPin;
   const ClockIcon = AppIcons.clock;
+  const skeletonRows = Array.from({ length: 3 });
 
   useEffect(() => {
     if (customerLat && customerLng) {
       calculate(customerLat, customerLng, subtotal).then(data => {
-        if (data) onFeeCalculated && onFeeCalculated(data);
+        if (data && onFeeCalculated) onFeeCalculated(data);
       });
     }
-  }, [customerLat, customerLng, subtotal]);
+  }, [customerLat, customerLng, subtotal, calculate]); 
 
-  if (loading) return <div style={styles.box}><div className="spinner" style={{ width: 24, height: 24, margin: '0 auto' }}></div></div>;
+  if (loading) return (
+    <div style={styles.box} aria-busy="true" aria-live="polite">
+      <div className="skeleton" style={{ width: 190, height: 16, borderRadius: 999, marginBottom: 12 }} />
+      {skeletonRows.map((_, idx) => (
+        <div key={idx} className="skeleton" style={{ width: idx === 2 ? '72%' : '100%', height: 12, borderRadius: 999, marginBottom: 8 }} />
+      ))}
+      <div className="skeleton" style={{ width: '88%', height: 14, borderRadius: 999, marginTop: 8 }} />
+    </div>
+  );
   if (error) return <div style={{ ...styles.box, color: 'var(--coral)', fontSize: 14 }}>Warning: {error}</div>;
   if (!feeData) return null;
 

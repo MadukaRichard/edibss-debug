@@ -14,16 +14,25 @@ const getSocket = () => {
 
 export const useSocket = () => getSocket();
 
-export const useOrderTracking = (orderId, onLocationUpdate, onStatusUpdate) => {
+// frontend/src/hooks/useSocket.js
+export const useOrderTracking = (orderId, onLocationUpdate, onStatusUpdate, onRiderAssigned) => {
   useEffect(() => {
     if (!orderId) return;
-    const sock = getSocket();
-    sock.emit('order:track', orderId);
-    sock.on('rider:location:update', onLocationUpdate);
-    sock.on('order:status:update', onStatusUpdate);
+    const socket = getSocket();
+    socket.emit('order:track', orderId);
+
+    socket.on('rider:location:update', onLocationUpdate);
+    socket.on('order:status:update', onStatusUpdate);
+    
+    // Add the new listener here:
+    if (onRiderAssigned) {
+      socket.on('rider:assigned', onRiderAssigned);
+    }
+
     return () => {
-      sock.off('rider:location:update', onLocationUpdate);
-      sock.off('order:status:update', onStatusUpdate);
+      socket.off('rider:location:update', onLocationUpdate);
+      socket.off('order:status:update', onStatusUpdate);
+      if (onRiderAssigned) socket.off('rider:assigned', onRiderAssigned);
     };
-  }, [orderId]);
+  }, [orderId, onLocationUpdate, onStatusUpdate, onRiderAssigned]);
 };

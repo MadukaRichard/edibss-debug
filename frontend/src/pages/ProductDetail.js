@@ -15,6 +15,7 @@ export default function ProductDetail() {
   const [qty, setQty] = useState(1);
   const [loading, setLoading] = useState(true);
   const CartIcon = AppIcons.cart;
+  const reviewSkeletons = Array.from({ length: 3 });
 
   useEffect(() => {
     Promise.all([api.get(`/products/${id}`), api.get(`/reviews/product/${id}`)]).then(([p, r]) => {
@@ -27,7 +28,47 @@ export default function ProductDetail() {
     api.get(`/reviews/product/${id}`).then(r => setReviews(r.data));
   };
 
-  if (loading) return <div className="spinner-wrap"><div className="spinner" /></div>;
+  if (loading) return (
+    <div className="container" style={{ padding: '40px 20px' }}>
+      <div className="product-detail-grid" style={styles.grid}>
+        <div style={styles.imgWrap}>
+          <div className="skeleton" style={{ height: 320 }} />
+        </div>
+        <div>
+          <div className="skeleton skeleton-text" style={{ width:110, marginBottom: 12 }} />
+          <div className="skeleton skeleton-text" style={{ width:'85%', height: 28, marginBottom: 12 }} />
+          <div className="skeleton skeleton-text" style={{ width:180, marginBottom: 14 }} />
+          <div className="skeleton skeleton-text" style={{ width:120, height: 32, marginBottom: 14 }} />
+          <div className="skeleton skeleton-text" style={{ width:'100%', height: 72, marginBottom: 20 }} />
+          <div className="skeleton skeleton-text" style={{ width:180, height: 44, marginBottom: 16, borderRadius: 8 }} />
+          <div className="skeleton skeleton-text" style={{ width:'45%', height: 14 }} />
+        </div>
+      </div>
+
+      <div style={{ marginTop:48 }}>
+        <div className="skeleton skeleton-text" style={{ width:220, height:22, marginBottom:20 }} />
+        {reviewSkeletons.map((_, idx) => (
+          <div key={idx} className="skeleton-card" style={{ marginBottom:12 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:10 }}>
+              <div className="skeleton skeleton-circle" style={{ width:38, height:38 }} />
+              <div style={{ flex:1 }}>
+                <div className="skeleton skeleton-text" style={{ width:'35%', marginBottom:8 }} />
+                <div className="skeleton skeleton-text" style={{ width:120, height:10 }} />
+              </div>
+              <div className="skeleton skeleton-text" style={{ width:70, height:12 }} />
+            </div>
+            <div className="skeleton skeleton-text" style={{ width:'92%', marginBottom:8 }} />
+            <div className="skeleton skeleton-text" style={{ width:'75%' }} />
+          </div>
+        ))}
+        <div className="skeleton-card" style={{ marginTop: 12 }}>
+          <div className="skeleton skeleton-text" style={{ width:160, height:20, marginBottom:14 }} />
+          <div className="skeleton skeleton-text" style={{ width:'100%', height: 120, marginBottom: 14 }} />
+          <div className="skeleton skeleton-text" style={{ width:160, height: 42, borderRadius: 8 }} />
+        </div>
+      </div>
+    </div>
+  );
   if (!product) return <div style={{ textAlign:'center', padding:60 }}>Product not found.</div>;
 
   return (
