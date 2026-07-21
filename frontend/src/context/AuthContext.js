@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { signInWithPopup } from 'firebase/auth';
 import api from '../services/api';
 import { auth, googleProvider, firebaseReady } from '../config/firebase';
@@ -44,12 +44,21 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
+      
+      // Grabbing the idToken just like your secure backend wants!
       const idToken = await result.user.getIdToken();
       const { data } = await api.post('/auth/google', { idToken });
+      
       localStorage.setItem('medirun_token', data.token);
       localStorage.setItem('medirun_user', JSON.stringify(data.user));
       setUser(data.user);
-      return { success: true };
+      
+      // ✨ MAGIC TRICK: If the user has no phone number, they are a brand new sign-up!
+      const isNewUser = !data.user.phone || data.user.phone === '';
+
+      // We return isNewUser so the frontend knows what to say
+      return { success: true, isNewUser };
+      
     } catch (err) {
       if (err.code === 'auth/popup-closed-by-user') return { success: false, message: '' };
       return { success: false, message: err.response?.data?.message || 'Google sign-in failed' };
@@ -57,17 +66,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    // 1. Remove auth data
     localStorage.removeItem('medirun_token');
     localStorage.removeItem('medirun_user');
-    
-    // 2. Remove the cart data so the next person starts fresh!
     localStorage.removeItem('medirun_cart');
-    
-    // 3. Clear the user state
     setUser(null);
-    
-    // 4. Force a hard redirect to the login page to clear active memory
     window.location.href = '/login';
   };
 
@@ -77,4 +79,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-

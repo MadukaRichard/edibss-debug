@@ -1,4 +1,16 @@
+# Dependencies
 backend/node_modules/
 frontend/node_modules/
+
+# Environment Variables
 backend/.env
 frontend/.env
+
+# User Uploads (Keeps customer prescriptions/images off GitHub)
+backend/uploads/
+
+# Production Build Files
+frontend/dist/
+
+# System Files
+.DS_Store

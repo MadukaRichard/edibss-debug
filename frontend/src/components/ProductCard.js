@@ -15,11 +15,26 @@ export default function ProductCard({ product }) {
 
   return (
     <Link to={`/products/${product._id}`} style={styles.card}>
-      <div style={styles.img}>
-        {product.image ? <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <CategoryIcon category={product.category} size={44} />}
+      <div style={styles.imgContainer}>
+        {product.image ? (
+          <img 
+            src={product.image} 
+            alt={product.name} 
+            style={styles.productImage} 
+          />
+        ) : (
+          <CategoryIcon category={product.category} size={44} />
+        )}
       </div>
       <div style={styles.body}>
-        <div style={styles.name}>{product.name}</div>
+        <div style={styles.name}>
+          {product.name}
+          {product.unit && product.unit !== 'item' && (
+            <span style={{ color: 'var(--gray-500)', fontSize: 13, marginLeft: 4, fontWeight: 500 }}>
+              ({product.unitSize}{product.unit})
+            </span>
+          )}
+        </div>
         <div style={styles.cat}>{product.category}</div>
         {product.reviewCount > 0 && (
           <div style={styles.rating}>
@@ -41,8 +56,20 @@ export default function ProductCard({ product }) {
 }
 
 const styles = {
-  card: { display: 'block', background: '#fff', borderRadius: 'var(--radius)', border: '1px solid var(--gray-200)', overflow: 'hidden', transition: 'box-shadow 0.15s, transform 0.15s', cursor: 'pointer' },
-  img: { height: 120, background: 'var(--teal-lt)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  card: { display: 'block', background: '#fff', borderRadius: 'var(--radius)', border: '1px solid var(--gray-200)', overflow: 'hidden', transition: 'box-shadow 0.15s, transform 0.15s', cursor: 'pointer', textDecoration: 'none' },
+  
+  // 1. Give the container a very soft gray background and a subtle bottom border
+  imgContainer: { width: '100%', aspectRatio: '4/3', background: 'var(--gray-50)', borderBottom: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  
+  // 2. The Magic Trick: 'contain', padding, and multiply blend mode!
+  productImage: { 
+    width: '100%', 
+    height: '100%', 
+    objectFit: 'contain', // Keeps the whole product visible without cropping
+    padding: '16px',      // Gives it breathing room from the edges
+    mixBlendMode: 'multiply' // Magically hides the white background of the JPG
+  },
+  
   body: { padding: '14px 14px 12px' },
   name: { fontSize: 14, fontWeight: 600, color: 'var(--gray-700)', marginBottom: 3, lineHeight: 1.4 },
   cat: { fontSize: 12, color: 'var(--gray-500)', marginBottom: 6 },

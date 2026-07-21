@@ -17,6 +17,8 @@ import ProductDetail from './pages/ProductDetail';
 import AdminLayout from './admin/AdminLayout';
 import Dashboard from './admin/pages/Dashboard';
 import ProductsCMS from './admin/pages/ProductsCMS';
+// 1. ADDED CATEGORIES IMPORT HERE
+import CategoriesCMS from './admin/pages/CategoriesCMS'; 
 import OrdersCMS from './admin/pages/OrdersCMS';
 import RidersCMS from './admin/pages/RidersCMS';
 import ReviewsCMS from './admin/pages/ReviewsCMS';
@@ -55,6 +57,8 @@ export default function App() {
             {/* Admin routes */}
             <Route path="/admin" element={<AdminLayout><Dashboard/></AdminLayout>} />
             <Route path="/admin/products" element={<AdminLayout><ProductsCMS/></AdminLayout>} />
+            {/* 2. ADDED CATEGORIES ROUTE HERE */}
+            <Route path="/admin/categories" element={<AdminLayout><CategoriesCMS/></AdminLayout>} /> 
             <Route path="/admin/orders" element={<AdminLayout><OrdersCMS/></AdminLayout>} />
             <Route path="/admin/riders" element={<AdminLayout><RidersCMS/></AdminLayout>} />
             <Route path="/admin/reviews" element={<AdminLayout><ReviewsCMS/></AdminLayout>} />

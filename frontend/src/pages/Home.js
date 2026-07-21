@@ -4,27 +4,60 @@ import ProductCard from '../components/ProductCard';
 import api from '../services/api';
 import { AppIcons, CategoryIcon } from '../components/UiIcons';
 
-const CATS = ['All','Medicines','Devices','Baby Care','Vitamins','First Aid','Diagnostics'];
 export default function Home() {
   const [products, setProducts] = useState([]);
+  // NEW: State to hold our dynamic categories, starting with a fallback
+  const [categories, setCategories] = useState(['All', 'Medicines', 'Devices', 'Baby Care', 'Vitamins', 'First Aid', 'Diagnostics']); 
   const [cat, setCat] = useState('All');
   const [loading, setLoading] = useState(true);
+  
   const [hero, setHero] = useState({
     headline: 'Medicines & health products, at your door in 30 min',
     subheadline: 'Licensed pharmacy partners, real-time rider GPS, AI-calculated delivery fees.',
     badge: 'Fast health delivery',
     cta: 'Shop now',
-    background: null // Added this to track the dynamic background
+    background: null,
+    promotionalBanners: [] 
   });
+  
+  const [currentSlide, setCurrentSlide] = useState(0);
+
   const LightningIcon = AppIcons.clock;
   const skeletonCards = Array.from({ length: 8 });
 
+  // Bulletproof data fetching. Pulls in BOTH the Hero and the custom Categories!
   useEffect(() => {
     api.get('/site-content').then(({ data }) => {
-      // This will now successfully pull in headline, subheadline, AND background!
-      if (data.hero) setHero(h => ({ ...h, ...data.hero }));
-    }).catch(() => {});
+      if (Array.isArray(data)) {
+        // Handle Array response
+        const heroEntry = data.find(d => d.key === 'hero');
+        if (heroEntry?.value) setHero(h => ({ ...h, ...heroEntry.value }));
+
+        const catEntry = data.find(d => d.key === 'categoryOrder');
+        if (catEntry?.value && catEntry.value.length > 0) {
+          setCategories(['All', ...catEntry.value]); // Always keep 'All' at the start
+        }
+      } else if (data) {
+        // Handle Object response
+        if (data.hero) setHero(h => ({ ...h, ...data.hero }));
+        if (data.categoryOrder && data.categoryOrder.length > 0) {
+          setCategories(['All', ...data.categoryOrder]);
+        }
+      }
+    }).catch(err => console.error("Content load error:", err));
   }, []);
+
+  // Carousel Auto-Slide Logic
+  useEffect(() => {
+    const banners = hero.promotionalBanners || [];
+    if (banners.length <= 1) return; 
+
+    const interval = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % banners.length);
+    }, 5000); 
+
+    return () => clearInterval(interval); 
+  }, [hero.promotionalBanners]);
 
   useEffect(() => {
     setLoading(true);
@@ -36,11 +69,10 @@ export default function Home() {
 
   return (
     <div>
-      {/* FIX: Dynamically applying the background from the database, falling back to styles.hero */}
+      {/* Hero Section */}
       <div style={{ ...styles.hero, ...(hero.background || hero.bgColor ? { background: hero.background || hero.bgColor } : {}) }}>
         <div className="container">
           <div className="badge badge-teal" style={{ marginBottom: 16, fontSize: 13 }}><LightningIcon size={14} style={{ marginRight: 6, verticalAlign: 'text-bottom' }} />{hero.badge}</div>
-          {/* FIX: Ensure your Admin CMS is saving text under the exact keys "headline" and "subheadline" */}
           <h1 style={styles.h1}>{hero.headline}</h1>
           <p style={styles.sub}>{hero.subheadline}</p>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -58,9 +90,48 @@ export default function Home() {
       </div>
 
       <div className="container" style={{ paddingTop: 40, paddingBottom: 60 }}>
-        {/* Categories */}
+        
+        {/* Promotional Carousel Section */}
+        {hero.promotionalBanners && hero.promotionalBanners.length > 0 && (
+          <div style={styles.carouselContainer}>
+            {hero.promotionalBanners.map((banner, idx) => (
+              <Link 
+                key={idx} 
+                to={banner.link || '/products'} 
+                style={{
+                  ...styles.carouselSlide,
+                  opacity: idx === currentSlide ? 1 : 0,
+                  zIndex: idx === currentSlide ? 1 : 0,
+                  pointerEvents: idx === currentSlide ? 'auto' : 'none'
+                }}
+              >
+                <img src={banner.imageUrl} alt={`Promo ${idx + 1}`} style={styles.carouselImage} />
+              </Link>
+            ))}
+            
+            {/* Carousel Navigation Dots */}
+            {hero.promotionalBanners.length > 1 && (
+              <div style={styles.carouselDots}>
+                {hero.promotionalBanners.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentSlide(idx)}
+                    style={{
+                      ...styles.dot,
+                      background: idx === currentSlide ? 'var(--teal)' : 'rgba(255,255,255,0.6)',
+                      width: idx === currentSlide ? 24 : 8 
+                    }}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Categories (Now dynamic!) */}
         <div style={styles.cats}>
-          {CATS.map(c => (
+          {categories.map(c => (
             <button key={c} style={{ ...styles.cat, ...(cat===c ? styles.catActive : {}) }} onClick={() => setCat(c)}>
               <CategoryIcon category={c} size={22} />
               <span style={{ fontSize: 12 }}>{c}</span>
@@ -110,6 +181,17 @@ const styles = {
   stats: { display: 'flex', alignItems: 'center', gap: 24, marginTop: 36 },
   stat: { display: 'flex', flexDirection: 'column', gap: 2 },
   statDiv: { width: 1, height: 32, background: 'var(--gray-200)' },
+  
+  carouselContainer: { position: 'relative', width: '100%', height: 'clamp(200px, 35vw, 450px)', borderRadius: 16, overflow: 'hidden', marginBottom: 40, background: 'var(--gray-100)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' },
+  carouselSlide: { position: 'absolute', inset: 0, transition: 'opacity 0.6s ease-in-out', display: 'block' },
+  carouselImage: { 
+    width: '100%', 
+    height: '100%', 
+    objectFit: 'cover' // This forces the image to fill the entire banner area!
+  },
+  carouselDots: { position: 'absolute', bottom: 16, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 8, zIndex: 10 },
+  dot: { height: 8, borderRadius: 8, border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', padding: 0 },
+
   cats: { display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4, marginBottom: 32 },
   cat: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '12px 16px', borderRadius: 12, border: '1.5px solid var(--gray-200)', background: '#fff', cursor: 'pointer', minWidth: 76, transition: 'all 0.15s', whiteSpace: 'nowrap', fontFamily: 'var(--font)' },
   catActive: { background: 'var(--teal-lt)', borderColor: 'var(--teal)', color: 'var(--teal-dk)' },

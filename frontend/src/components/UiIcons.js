@@ -28,6 +28,7 @@ import {
   LuNavigation,
   LuArrowRight,
   LuArrowLeft,
+  LuCloud, // <-- 1. NEW ICON IMPORTED HERE!
 } from 'react-icons/lu';
 
 export const CategoryIconMap = {
@@ -38,6 +39,7 @@ export const CategoryIconMap = {
   Vitamins: LuLeaf,
   'First Aid': LuShieldCheck,
   Diagnostics: LuThermometer,
+  Puff: LuCloud, // <-- 2. NEW CATEGORY ADDED TO THE DICTIONARY HERE!
   default: LuPackage,
 };
 

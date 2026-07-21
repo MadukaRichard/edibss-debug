@@ -3,9 +3,11 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AppIcons, NavIconMap } from '../components/UiIcons';
 
+// --- ADDED THE CATEGORIES LINK TO THIS LIST ---
 const NAV = [
   { path:'/admin', label:'Dashboard', icon:'dashboard' },
   { path:'/admin/products', label:'Products', icon:'products' },
+  { path:'/admin/categories', label:'Categories', icon:'dashboard' }, // <-- NEW CATEGORIES TAB
   { path:'/admin/orders', label:'Orders', icon:'orders' },
   { path:'/admin/riders', label:'Riders', icon:'riders' },
   { path:'/admin/reviews', label:'Reviews', icon:'reviews' },
@@ -124,7 +126,6 @@ const styles = {
   sideHead: { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'20px 16px', borderBottom:'1px solid rgba(255,255,255,0.1)' },
   sideLogo: { fontSize:15, fontWeight:700, color:'#fff', whiteSpace:'nowrap' },
   collapseBtn: { background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', borderRadius:6, width:28, height:28, cursor:'pointer', flexShrink:0 },
-  // FIX: Removed borderLeftColor conflict. Now using full borderLeft shorthand strictly.
   navItem: { display:'flex', alignItems:'center', gap:12, padding:'11px 16px', color:'rgba(255,255,255,0.75)', transition:'all 0.15s', borderLeft:'3px solid transparent', textDecoration:'none', whiteSpace:'nowrap', overflow:'hidden' },
   navActive: { background:'rgba(255,255,255,0.15)', color:'#fff', borderLeft:'3px solid #fff' },
   sideFooter: { padding:'16px', borderTop:'1px solid rgba(255,255,255,0.1)' },
@@ -132,5 +133,5 @@ const styles = {
   main: { flex:1, display:'flex', flexDirection:'column', minWidth:0, background:'var(--gray-50)' },
   topBar: { background:'#fff', borderBottom:'1px solid var(--gray-200)', padding:'12px 28px', display:'flex', alignItems:'center' },
   hamburgerBtn: { background: 'none', border: 'none', color: 'var(--gray-700)', cursor: 'pointer', display: 'flex', padding: 0 },
-  content: { padding: '24px clamp(16px, 4vw, 28px)', flex:1, overflowX: 'hidden' }, // Dynamic padding
+  content: { padding: '24px clamp(16px, 4vw, 28px)', flex:1, overflowX: 'hidden' }, 
 };

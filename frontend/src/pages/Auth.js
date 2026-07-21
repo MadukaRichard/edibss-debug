@@ -26,7 +26,16 @@ export default function Auth() {
     setGoogleLoading(true);
     const result = await loginWithGoogle();
     setGoogleLoading(false);
-    if (result.success) { toast.success('Welcome!'); navigate('/'); }
+    
+    if (result.success) { 
+      if (result.isNewUser) {
+        // A clean, simple welcome for brand new users!
+        toast.success('Account created! Welcome to MediRun!');
+      } else {
+        toast.success('Welcome back!'); 
+      }
+      navigate('/'); 
+    }
     else if (result.message) toast.error(result.message);
   };
 
