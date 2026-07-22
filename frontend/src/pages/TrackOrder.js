@@ -16,20 +16,26 @@ export default function TrackOrder() {
   const ClockIcon = AppIcons.clock;
   const orderSkeletonRows = Array.from({ length: 3 });
 
-  useEffect(() => {
+ useEffect(() => {
     if (!id) return;
     
     const fetchOrder = () => {
-      api.get(`/orders/${id}`).then(({ data }) => {
-        setOrder(data);
-        if (data.riderLocation?.lat) setRiderLoc(data.riderLocation);
-      }).catch(() => {});
+      api.get(`/orders/${id}`)
+        .then(({ data }) => {
+          setOrder(data);
+          if (data.riderLocation?.lat) setRiderLoc(data.riderLocation);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error("Error fetching order:", err);
+          setLoading(false);
+        });
     };
 
     // Initial load
-    fetchOrder().finally(() => setLoading(false));
+    fetchOrder();
 
-    // Backup polling every 8 seconds so it updates automatically even if sockets lag
+    // Backup polling every 8 seconds for live updates
     const intervalId = setInterval(fetchOrder, 8000);
 
     return () => clearInterval(intervalId); // Cleanup on unmount
