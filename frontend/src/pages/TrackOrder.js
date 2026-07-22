@@ -18,10 +18,21 @@ export default function TrackOrder() {
 
   useEffect(() => {
     if (!id) return;
-    api.get(`/orders/${id}`).then(({ data }) => {
-      setOrder(data);
-      if (data.riderLocation?.lat) setRiderLoc(data.riderLocation);
-    }).catch(() => {}).finally(() => setLoading(false));
+    
+    const fetchOrder = () => {
+      api.get(`/orders/${id}`).then(({ data }) => {
+        setOrder(data);
+        if (data.riderLocation?.lat) setRiderLoc(data.riderLocation);
+      }).catch(() => {});
+    };
+
+    // Initial load
+    fetchOrder().finally(() => setLoading(false));
+
+    // Backup polling every 8 seconds so it updates automatically even if sockets lag
+    const intervalId = setInterval(fetchOrder, 8000);
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
   }, [id]);
 
   useEffect(() => {
