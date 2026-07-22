@@ -84,31 +84,29 @@ input, select, textarea { font-family: var(--font); }
 
 /* ---------------- Responsive layout ---------------- */
 
-/* Navbar: hide the desktop link/action row and show the hamburger below
-   768px. The hamburger itself is hidden by default and only shown here —
-   fixes it never appearing on mobile at all. */
 .navbar-hamburger { display: none; }
 @media (max-width: 768px) {
+  /* Hide desktop navigation links and desktop user profile pill on mobile */
   .navbar-links { display: none !important; }
-  .navbar-actions { display: none !important; }
+  .desktop-user-container { display: none !important; }
+  
+  /* Keep cart visible and ensure hamburger appears on mobile */
+  .navbar-actions { display: flex !important; align-items: center; gap: 8px; }
   .navbar-hamburger { display: flex !important; align-items: center; justify-content: center; }
 }
+
 .navbar-mobile-menu { display: none; }
 @media (max-width: 768px) {
   .navbar-mobile-menu { display: block; }
 }
 
-/* Two-column page layouts collapse to a single column on tablets/phones,
-   with the summary/sidebar column moving above the item list on mobile so
-   totals and the primary action button are visible without scrolling past
-   the whole list first. */
+/* Two-column page layouts collapse to a single column on tablets/phones */
 @media (max-width: 900px) {
   .cart-grid, .checkout-grid { grid-template-columns: 1fr !important; }
   .product-detail-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
 }
 
-/* Admin sidebar auto-collapses to an icon rail on small screens so it
-   doesn't eat the available width on a phone. */
+/* Admin sidebar auto-collapses to an icon rail on small screens */
 @media (max-width: 768px) {
   .admin-sidebar { width: 60px !important; }
   .admin-sidebar-label { display: none !important; }
@@ -120,4 +118,3 @@ input, select, textarea { font-family: var(--font); }
   .btn-lg { padding: 12px 20px; font-size: 15px; }
   .admin-content { padding: 16px !important; }
 }
-

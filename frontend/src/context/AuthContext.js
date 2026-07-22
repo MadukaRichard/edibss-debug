@@ -45,7 +45,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       
-      // Grabbing the idToken just like your secure backend wants!
       const idToken = await result.user.getIdToken();
       const { data } = await api.post('/auth/google', { idToken });
       
@@ -53,11 +52,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('medirun_user', JSON.stringify(data.user));
       setUser(data.user);
       
-      // ✨ MAGIC TRICK: If the user has no phone number, they are a brand new sign-up!
-      const isNewUser = !data.user.phone || data.user.phone === '';
-
-      // We return isNewUser so the frontend knows what to say
-      return { success: true, isNewUser };
+      return { success: true, isNewUser: data.isNewUser };
       
     } catch (err) {
       if (err.code === 'auth/popup-closed-by-user') return { success: false, message: '' };

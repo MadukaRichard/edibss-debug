@@ -40,7 +40,7 @@ router.post('/login', async (req, res) => {
 router.post('/google', async (req, res) => {
   try {
     if (!admin.apps.length) {
-      return res.status(503).json({ message: 'Google sign-in is not configured on the server yet. See README for Firebase setup.' });
+      return res.status(503).json({ message: 'Google sign-in is not configured on the server yet.' });
     }
     const { idToken } = req.body;
     if (!idToken) return res.status(400).json({ message: 'Missing idToken' });
@@ -50,6 +50,8 @@ router.post('/google', async (req, res) => {
     if (!email) return res.status(400).json({ message: 'Google account has no email' });
 
     let user = await User.findOne({ $or: [{ googleId: uid }, { email }] });
+    let isNewUser = false;
+
     if (!user) {
       user = await User.create({
         name: name || email.split('@')[0],
@@ -59,21 +61,24 @@ router.post('/google', async (req, res) => {
         avatar: picture,
         phone: ''
       });
+      isNewUser = true; // ✨ Explicitly mark as true only when newly created!
     } else if (!user.googleId) {
-      // An account with this email already exists (registered with a password) —
-      // link the Google identity to it instead of creating a duplicate account.
       user.googleId = uid;
       if (!user.avatar) user.avatar = picture;
       await user.save();
     }
 
-    res.json({ token: sign(user._id), user: { id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar, phone: user.phone } });
+    // Pass isNewUser back to your frontend context
+    res.json({ 
+      token: sign(user._id), 
+      isNewUser, 
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar, phone: user.phone } 
+    });
   } catch (err) {
     console.error('Google auth error:', err.message);
     res.status(401).json({ message: 'Google sign-in failed. Please try again.' });
   }
 });
-
 router.get('/me', protect, (req, res) => res.json(req.user));
 
 // Lets a Google-signed-in user (who has no phone on file) add one, since we
